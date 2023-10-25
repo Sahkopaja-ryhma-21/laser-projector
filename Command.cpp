@@ -1,11 +1,18 @@
 #include "Command.h"
 #include "Position.h"
 
-Instruction::Instruction(char command,Position p1,Position p2){
-	Instruction(Command::Line, p1, p2);
+void InstructionList::addInstruction(Instruction instruction){
+	instructions[point] = instruction;
+	point++;
 }
 
-void InstructionList::addInstruction(Instruction instruction){
-	this->instructions[point] = instruction;
-	this->point++;
+Command from_char(char t){
+	switch (t){
+		case 1:
+			return Command::Line;
+			break;
+		default:
+			return Command::End;
+			break;
+	};
 }

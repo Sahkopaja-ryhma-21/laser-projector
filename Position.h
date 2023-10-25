@@ -1,13 +1,13 @@
 #pragma once
-#include <Arduino.h>
 
-class Position{
+struct Position{
 	private:
 		unsigned short bsqrt(unsigned long n);
 	public:
-		Position(byte x1, byte y1);
-		byte x;
-		byte y;
+		char x;
+		char y;
 		// Returns the approximate distance between two positions.
 		unsigned short distance(Position &another);
 };
+
+Position create_position(char ,char);

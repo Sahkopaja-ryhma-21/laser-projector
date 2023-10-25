@@ -44,20 +44,20 @@ void goto_point(Position pos) {
 }
 
 InstructionList read_data() {
-	InstructionList list = InstructionList();
+	InstructionList list;
 	Serial.println("Please input your image");
 	short i = 0;
 	while (true){
 		while (Serial.available()<3){
 		}
 
-		byte comm = Serial.read();
+		char comm = Serial.read();
 		Serial.print("Recieved");
 		Serial.println(comm);
-		byte posx = Serial.read();
+		char posx = Serial.read();
 		Serial.print("Recieved");
 		Serial.println(posx);
-		byte posy = Serial.read();
+		char posy = Serial.read();
 		Serial.print("Recieved");
 		Serial.println(posy);
 
@@ -65,14 +65,14 @@ InstructionList read_data() {
 		// full zeroes tell that the input is over and time to get to work.
 		if ((comm | posy | posx)  == 0){
 			Serial.println("Input ended. Beginning drawing");
-			return commands;
+			return list;
 		}
-
-		commands[i] = comm;
-		commands[i+1] = posx;
-		commands[i+2] = posy;
+		Instruction instruction;
+		instruction.command = from_char(comm);
+		instruction.pos = create_position(posx, posy);
+		list.addInstruction(instruction);
 
 		i+=3;
-		if (i>=1026) return commands;
+		if (i>=1026) return list;
 	}
 }
