@@ -22,6 +22,9 @@ unsigned short Position::bsqrt(unsigned long n){
 	return guess;
 };
 
-Position::Position(byte x1,byte y1){
-	Position(x1,y1);
+Position create_position(char x,char y){
+	Position pos;
+	pos.x = x;
+	pos.y = y;
+	return pos;
 }
