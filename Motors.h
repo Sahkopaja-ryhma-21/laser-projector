@@ -2,7 +2,7 @@
 
 #define CSX 10
 #define CSY 9
-#define t 10
+#define TIME_CONSTANT 10
 #define WAIT_TIME 10
 #define LASER_PIN 4
 

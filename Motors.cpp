@@ -8,13 +8,11 @@ void move_motor(unsigned char pos,unsigned char pin){
 	digitalWrite(pin, HIGH);
 }
 
-void draw_line(Position p1, Position p2){
-	digitalWrite(LASER_PIN, LOW);
-	goto_point(p1);
+/// Draws a line from current position to position p1
+void draw_line(Position pos, Position last_pos){
 	digitalWrite(LASER_PIN, HIGH);
-	goto_point(p2);
+	goto_point(pos);
 	// FIX: Master must do interpolation.
-	delay(p1.distance(p2));
 	digitalWrite(LASER_PIN, LOW);
 }
 

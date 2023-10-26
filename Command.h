@@ -1,7 +1,9 @@
 #pragma once
 #include "Position.h"
 
-enum Command{Line, LoopStart, LoopEnd, End};
+enum Command: unsigned char{
+	Move,Draw, LoopStart, LoopEnd, End
+};
 
 struct Instruction{
 	public:
@@ -11,10 +13,14 @@ struct Instruction{
 
 struct InstructionList{
 	public:
-		Instruction instructions[1026];
+		Instruction instructions[501];
 		void addInstruction(Instruction Instruction);
+		void executeNext();
+		void finalize();
 	private:
 		int point = 0;
+		int end;
+		Position currentPos = create_position(0,0);
 };
 
 Command from_char(char);
