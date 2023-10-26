@@ -1,13 +1,10 @@
-#include <SPI.h>
 #include "Position.h"
 #include <EEPROM.h>
 #include "Command.h"
+#include "Motors.h"
+#include <SPI.h>
 
-#define CSX 10
-#define CSY 9
-#define t 10
-#define WAIT_TIME 10
-#define LASER_PIN 4
+const InstructionList commands;
 
 void setup() {
 	Serial.begin(9600);
@@ -16,31 +13,14 @@ void setup() {
 	pinMode(CSY, OUTPUT);
 	pinMode(CSX, OUTPUT);
 	pinMode(LASER_PIN, OUTPUT);
-	InstructionList commands = read_data();
+	commands = read_data();
 }
 
 void loop() {
-}
-
-void move_motor(byte pos, byte pin){
-	digitalWrite(pin, LOW);
-	SPI.transfer(pos);
-	digitalWrite(pin, HIGH);
-}
-
-void draw_line(Position p1, Position p2){
-	digitalWrite(LASER_PIN, LOW);
-	goto_point(p1);
-	digitalWrite(LASER_PIN, HIGH);
-	goto_point(p2);
-	// FIX: Master must do interpolation.
-	delay(p1.distance(p2));
-	digitalWrite(LASER_PIN, LOW);
-}
-
-void goto_point(Position pos) {
-	move_motor(pos.x,CSX);
-	move_motor(pos.y,CSY);
+	int i = 0;
+	while (true){
+		
+	}
 }
 
 InstructionList read_data() {
