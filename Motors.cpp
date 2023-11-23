@@ -26,7 +26,7 @@ void draw_line(Position pos, Position last_pos){
 	int d = (dy>>2)-dx;
 	int y = last_pos.y;
 
-	for(x = last_pos.x; x<pos.x; x++){
+	for(int x = last_pos.x; x<pos.x; x++){
 		Position goto_pos;
 		goto_pos.x = x;
 		goto_pos.y = y;
@@ -34,10 +34,10 @@ void draw_line(Position pos, Position last_pos){
 
 		if(dy>0){
 			y += yi;
-			D += (dy-dx)>>2;
+			d += (dy-dx)>>2;
 
 		} else {
-			D += dy>>2;
+			d += dy>>2;
 		}
 	}
 

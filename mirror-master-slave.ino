@@ -13,6 +13,7 @@ void setup() {
 	pinMode(CSY, OUTPUT);
 	pinMode(CSX, OUTPUT);
 	pinMode(LASER_PIN, OUTPUT);
+	pinMode(STATUS_LED, OUTPUT);
 	commands = read_data();
 }
 
@@ -45,6 +46,7 @@ InstructionList read_data() {
 		// full zeroes tell that the input is over and time to get to work.
 		if ((comm | posy | posx)  == 0){
 			Serial.println("Input ended. Beginning drawing");
+			digitalWrite(STATUS_LED, HIGH);
 			return list;
 		}
 		Instruction instruction;
