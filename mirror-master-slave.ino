@@ -20,32 +20,23 @@ void setup() {
 void loop() {
 	int i = 0;
 	while (true){
-		
+		commands.executeNext();
 	}
 }
 
 InstructionList read_data() {
 	InstructionList list;
-	Serial.println("Please input your image");
 	short i = 0;
 	while (true){
 		while (Serial.available()<3){
 		}
 
 		char comm = Serial.read();
-		Serial.print("Recieved");
-		Serial.println(comm);
 		char posx = Serial.read();
-		Serial.print("Recieved");
-		Serial.println(posx);
 		char posy = Serial.read();
-		Serial.print("Recieved");
-		Serial.println(posy);
-
 
 		// full zeroes tell that the input is over and time to get to work.
 		if ((comm | posy | posx)  == 0){
-			Serial.println("Input ended. Beginning drawing");
 			digitalWrite(STATUS_LED, HIGH);
 			return list;
 		}

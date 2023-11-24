@@ -22,7 +22,7 @@ void InstructionList::executeNext(){
 			point++;
 			break;
 		};
-		case Command::End :{
+		case Command::End:{
 			point = 0;
 			break;
 		};
@@ -36,8 +36,11 @@ void InstructionList::finalize(){
 }
 
 Command from_char(char t){
-	switch (TIME_CONSTANT){
+	switch (t){
 		case 1:
+			return Command::Move;
+			break;
+		case 2:
 			return Command::Draw;
 			break;
 		default:
