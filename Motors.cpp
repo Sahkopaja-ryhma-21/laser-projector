@@ -16,30 +16,95 @@ void draw_line(Position pos, Position last_pos){
 	// https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 	int dx = pos.x - last_pos.x;
 	int dy = pos.y - last_pos.y;
-	int yi = 1;
 
-	if(dy<0){
-		dy = -dy;
-		yi = -1;
-	}
-	
-	int d = (dy>>2)-dx;
-	int y = last_pos.y;
+	int dx1 = dx < 0 ? -dx : dx;
+	int dy1 = dy < 0 ? -dy : dy;
 
-	for(int x = last_pos.x; x<pos.x; x++){
+	int px = (dy1*2)-dx1; 
+	int py = (dx1*2)-dy1;
+
+	int x;
+	int y;
+	int x2;
+	int y2;
+
+	// x-dominant
+	if(dy1 <= dx1){
+
+
+		// left to right
+		if(dx>=0){
+			x = last_pos.x;
+			y = last_pos.y;
+			x2 = pos.x;
+		} else { // right to left
+			x = pos.x;
+			y = pos.y;
+			x2 = last_pos.x;
+		}
 		Position goto_pos;
 		goto_pos.x = x;
 		goto_pos.y = y;
 		goto_point(goto_pos);
 
-		if(dy>0){
-			y += yi;
-			d += (dy-dx)>>2;
+		        // Rasterize the line
+        for (i = 0; x < xe; i++) {
+            x++;            // Deal with octants...
+            if (px < 0) {
+                px = px + 2 * dy1;
+            } else {
+                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) {
+                    y = y + 1;
+                } else {
+                    y = y - 1;
+                }
+                px = px + 2 * (dy1 - dx1);
+            }            
+			// Draw pixel from line span at
+            // currently rasterized position
+			goto_pos.x = x;
+			goto_pos.y = y;
+			goto_point(goto_pos);
+        }
 
-		} else {
-			d += dy>>2;
-		}
-	}
+	} else { // The line is Y-axis dominant        
+
+
+		// Line is drawn bottom to top
+        if (dy >= 0) {
+            x = last_pos.x;
+			y = last_pos.y;
+			ye = pos.y;
+        } else { // Line is drawn top to bottom
+            x = pos.x;
+			y = pos.y;
+			ye = last_pos.y;
+        }
+		
+		Position goto_pos;
+		goto_pos.x = x;
+		goto_pos.y = y;
+		goto_point(goto_pos);
+		
+        // Rasterize the line
+        for (i = 0; y < ye; i++) {
+            y = y + 1;            // Deal with octants...
+            if (py <= 0) {
+                py = py + 2 * dx1;
+            } else {
+                if ((dx < 0 && dy<0) || (dx > 0 && dy > 0)) {
+                    x = x + 1;
+                } else {
+                    x = x - 1;
+                }
+                py = py + 2 * (dx1 - dy1);
+            }            // Draw pixel from line span at
+            // currently rasterized position
+			goto_pos.x = x;
+			goto_pos.y = y;
+			goto_point(goto_pos);
+        }
+    }
 
 	digitalWrite(LASER_PIN, LOW);
 }
