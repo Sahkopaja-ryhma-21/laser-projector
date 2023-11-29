@@ -18,7 +18,6 @@ void setup() {
 }
 
 void loop() {
-	int i = 0;
 	while (true){
 		commands.executeNext();
 	}
@@ -31,20 +30,21 @@ InstructionList read_data() {
 		while (Serial.available()<3){
 		}
 
-		char comm = Serial.read();
-		char posx = Serial.read();
-		char posy = Serial.read();
+		unsigned char comm = Serial.read();
+		unsigned char posx = Serial.read();
+		unsigned char posy = Serial.read();
 
 		// full zeroes tell that the input is over and time to get to work.
-		if ((comm | posy | posx)  == 0){
-			digitalWrite(STATUS_LED, HIGH);
-			return list;
-		}
+
 		Instruction instruction;
 		instruction.command = from_char(comm);
 		instruction.pos = create_position(posx, posy);
 		list.addInstruction(instruction);
-
+		if ((comm | posy | posx)  == 0){
+			digitalWrite(STATUS_LED, HIGH);
+			list.finalize();
+			return list;
+		}
 		i+=3;
 		if (i>=1026) return list;
 	}

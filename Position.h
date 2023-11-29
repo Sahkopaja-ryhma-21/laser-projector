@@ -4,8 +4,8 @@ struct Position{
 	private:
 		unsigned short bsqrt(unsigned long n);
 	public:
-		char x;
-		char y;
+		unsigned char x;
+		unsigned char y;
 		// Returns the approximate distance between two positions.
 		unsigned short distance(Position &another);
 };

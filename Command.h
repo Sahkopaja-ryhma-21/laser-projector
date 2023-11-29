@@ -23,4 +23,4 @@ struct InstructionList{
 		Position currentPos = create_position(0,0);
 };
 
-Command from_char(char);
+Command from_char(unsigned char);

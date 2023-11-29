@@ -26,7 +26,9 @@ void InstructionList::executeNext(){
 			point = 0;
 			break;
 		};
-		default: break;
+		default:
+			point = 0;
+			break;
 	}
 }
 
@@ -35,7 +37,7 @@ void InstructionList::finalize(){
 	point = 0;
 }
 
-Command from_char(char t){
+Command from_char(unsigned char t){
 	switch (t){
 		case 1:
 			return Command::Move;
