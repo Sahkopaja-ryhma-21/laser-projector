@@ -27,6 +27,8 @@ void draw_line(Position pos, Position last_pos){
 	int y;
 	int x2;
 	int y2;
+	int xe;
+	int ye;
 
 	// x-dominant
 	if(dy1 <= dx1){
@@ -48,7 +50,7 @@ void draw_line(Position pos, Position last_pos){
 		goto_point(goto_pos);
 
 		        // Rasterize the line
-        for (i = 0; x < xe; i++) {
+        for (int i = 0; x < xe; i++) {
             x++;            // Deal with octants...
             if (px < 0) {
                 px = px + 2 * dy1;
@@ -87,7 +89,7 @@ void draw_line(Position pos, Position last_pos){
 		goto_point(goto_pos);
 		
         // Rasterize the line
-        for (i = 0; y < ye; i++) {
+        for (int i = 0; y < ye; i++) {
             y = y + 1;            // Deal with octants...
             if (py <= 0) {
                 py = py + 2 * dx1;
