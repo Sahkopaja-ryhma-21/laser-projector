@@ -26,8 +26,6 @@ void draw_line(Position pos, Position last_pos){
 
 	int x;
 	int y;
-	int x2;
-	int y2;
 	int xe;
 	int ye;
 
@@ -38,11 +36,11 @@ void draw_line(Position pos, Position last_pos){
 		if(dx>=0){
 			x = last_pos.x;
 			y = last_pos.y;
-			x2 = pos.x;
+			xe = pos.x;
 		} else { // right to left
 			x = pos.x;
 			y = pos.y;
-			x2 = last_pos.x;
+			xe = last_pos.x;
 		}
 		Position goto_pos;
 		goto_pos.x = x;
