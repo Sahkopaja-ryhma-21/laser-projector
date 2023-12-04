@@ -11,7 +11,7 @@ void InstructionList::executeNext(){
 	Instruction ins = instructions[point];
 	switch (ins.command){
 		case Command::Move:{
-			goto_point(ins.pos);
+			goto_point(ins.pos,currentPos.time_between(ins.pos));
 			currentPos = ins.pos;
 			point++;
 			break;

@@ -14,16 +14,16 @@ void setup() {
 	pinMode(CSX, OUTPUT);
 	pinMode(LASER_PIN, OUTPUT);
 	pinMode(STATUS_LED, OUTPUT);
+	digitalWrite(CSX, HIGH);
+	digitalWrite(CSY, HIGH);
 	commands = read_data();
 	enable_motor(CSX);
 	enable_motor(CSY);
-	delay(1000);
+	delay(2000);
 }
 
 void loop() {
-	while (true){
-		commands.executeNext();
-	}
+	commands.executeNext();
 }
 
 InstructionList read_data() {

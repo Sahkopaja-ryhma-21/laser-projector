@@ -7,11 +7,9 @@
 #define LASER_PIN 4
 #define STATUS_LED 7
 
-void move_motor(unsigned char, unsigned char);
-
 void draw_line(Position, Position);
 
-void goto_point(Position);
+void goto_point(Position, unsigned short);
 
 void enable_motor(unsigned char);
 

@@ -8,6 +8,7 @@ struct Position{
 		unsigned char y;
 		// Returns the approximate distance between two positions.
 		unsigned short distance(Position &another);
+		unsigned short time_between(Position &another);
 };
 
-Position create_position(char ,char);
+Position create_position(unsigned char ,unsigned char);
