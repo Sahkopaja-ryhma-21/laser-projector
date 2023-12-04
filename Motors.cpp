@@ -6,6 +6,7 @@ void move_motor(unsigned char pos,unsigned char pin){
 	digitalWrite(pin, LOW);
 	SPI.transfer(pos);
 	digitalWrite(pin, HIGH);
+	delayMicroseconds(10);
 }
 
 /// Draws a line from current position to position p1
@@ -33,7 +34,6 @@ void draw_line(Position pos, Position last_pos){
 	// x-dominant
 	if(dy1 <= dx1){
 
-
 		// left to right
 		if(dx>=0){
 			x = last_pos.x;
@@ -49,64 +49,63 @@ void draw_line(Position pos, Position last_pos){
 		goto_pos.y = y;
 		goto_point(goto_pos);
 
-		        // Rasterize the line
-        for (int i = 0; x < xe; i++) {
-            x++;            // Deal with octants...
-            if (px < 0) {
-                px = px + 2 * dy1;
-            } else {
-                if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) {
-                    y = y + 1;
-                } else {
-                    y = y - 1;
-                }
-                px = px + 2 * (dy1 - dx1);
-            }            
-			// Draw pixel from line span at
-            // currently rasterized position
+		// Rasterize the line
+		for (int i = 0; x < xe; i++) {
+			x++;            // Deal with octants...
+			if (px < 0) {
+				px = px + 2 * dy1;
+			} else {
+				if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) {
+				    y = y + 1;
+				} else {
+				    y = y - 1;
+				}
+				px = px + 2 * (dy1 - dx1);
+			}
+				// Draw pixel from line span at
+		    // currently rasterized position
 			goto_pos.x = x;
 			goto_pos.y = y;
 			goto_point(goto_pos);
-        }
+		}
 
 	} else { // The line is Y-axis dominant        
 
-
-		// Line is drawn bottom to top
-        if (dy >= 0) {
-            x = last_pos.x;
+			// Line is drawn bottom to top
+		if (dy >= 0) {
+			x = last_pos.x;
 			y = last_pos.y;
 			ye = pos.y;
-        } else { // Line is drawn top to bottom
-            x = pos.x;
+		} else { // Line is drawn top to bottom
+			x = pos.x;
 			y = pos.y;
 			ye = last_pos.y;
-        }
-		
+		}
+			
 		Position goto_pos;
 		goto_pos.x = x;
 		goto_pos.y = y;
 		goto_point(goto_pos);
-		
-        // Rasterize the line
-        for (int i = 0; y < ye; i++) {
-            y = y + 1;            // Deal with octants...
-            if (py <= 0) {
-                py = py + 2 * dx1;
-            } else {
-                if ((dx < 0 && dy<0) || (dx > 0 && dy > 0)) {
-                    x = x + 1;
-                } else {
-                    x = x - 1;
-                }
-                py = py + 2 * (dx1 - dy1);
-            }            // Draw pixel from line span at
-            // currently rasterized position
-			goto_pos.x = x;
-			goto_pos.y = y;
-			goto_point(goto_pos);
-        }
-    }
+			
+		// Rasterize the line
+		for (int i = 0; y < ye; i++) {
+			y = y + 1;            // Deal with octants...
+			if (py <= 0) {
+				py = py + 2 * dx1;
+			} else {
+				if ((dx < 0 && dy<0) || (dx > 0 && dy > 0)) {
+				x = x + 1;
+				} else {
+				x = x - 1;
+				}
+			py = py + 2 * (dx1 - dy1);
+		    }            // Draw pixel from line span at
+		    // currently rasterized position
+		goto_pos.x = x;
+		goto_pos.y = y;
+		goto_point(goto_pos);
+		}
+	}
 
 	digitalWrite(LASER_PIN, LOW);
 }
