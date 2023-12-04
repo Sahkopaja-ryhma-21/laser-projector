@@ -114,3 +114,17 @@ void goto_point(Position pos) {
 	move_motor(pos.x,CSX);
 	move_motor(pos.y,CSY);
 }
+
+void enable_motor(unsigned char pin){
+	digitalWrite(pin, LOW);
+	SPI.transfer(31);
+	SPI.transfer(5);
+	digitalWrite(pin, HIGH);
+}
+
+void disable_motor(unsigned char pin){
+	digitalWrite(pin, LOW);
+	SPI.transfer(31);
+	SPI.transfer(0);
+	digitalWrite(pin, HIGH);
+}

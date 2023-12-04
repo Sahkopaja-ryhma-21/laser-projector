@@ -1,20 +1,23 @@
 #include "Position.h"
-#include <EEPROM.h>
 #include "Command.h"
 #include "Motors.h"
 #include <SPI.h>
 
 const InstructionList commands;
+void(* resetFunc) (void) = 0;
 
 void setup() {
 	Serial.begin(9600);
 	SPI.begin();
-	SPI.beginTransaction(SPISettings(14000, MSBFIRST, SPI_MODE0));
+	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
 	pinMode(CSY, OUTPUT);
 	pinMode(CSX, OUTPUT);
 	pinMode(LASER_PIN, OUTPUT);
 	pinMode(STATUS_LED, OUTPUT);
 	commands = read_data();
+	enable_motor(CSX);
+	enable_motor(CSY);
+	delay(1000);
 }
 
 void loop() {
@@ -46,6 +49,6 @@ InstructionList read_data() {
 			return list;
 		}
 		i+=3;
-		if (i>=1026) return list;
+		if (i>=1026) resetFunc();
 	}
 }
