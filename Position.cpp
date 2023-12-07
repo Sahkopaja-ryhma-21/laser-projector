@@ -1,3 +1,4 @@
+#include "Constants.h"
 #include "Position.h"
 #include "Arduino.h"
 #include <math.h>
@@ -12,7 +13,7 @@ unsigned short Position::distance(Position &another){
 
 unsigned short Position::time_between(Position &another){
 	unsigned short maxDist = max(abs(this->x - another.x), abs(this->y - another.y));
-	return 8*maxDist;
+	return MOVING_WAIT_MULTIPLIER*GOTO_WAIT_TIME*maxDist;
 }
 
 unsigned short Position::bsqrt(unsigned long n){

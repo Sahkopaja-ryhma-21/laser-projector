@@ -7,6 +7,7 @@
 #define LASER_PIN 4
 #define STATUS_LED 7
 
+
 void draw_line(Position, Position);
 
 void goto_point(Position, unsigned short);

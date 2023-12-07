@@ -1,3 +1,4 @@
+#include "Constants.h"
 #include "Motors.h"
 #include "Arduino.h"
 #include <SPI.h>
@@ -44,7 +45,7 @@ void draw_line(Position pos, Position last_pos){
 		Position goto_pos;
 		goto_pos.x = x;
 		goto_pos.y = y;
-		goto_point(goto_pos, 8);
+		goto_point(goto_pos, GOTO_WAIT_TIME);
 
 		// Rasterize the line
 		for (int i = 0; x < xe; i++) {
@@ -63,7 +64,7 @@ void draw_line(Position pos, Position last_pos){
 		    // currently rasterized position
 			goto_pos.x = x;
 			goto_pos.y = y;
-			goto_point(goto_pos,8);
+			goto_point(goto_pos, GOTO_WAIT_TIME);
 		}
 
 	} else { // The line is Y-axis dominant        
@@ -82,7 +83,7 @@ void draw_line(Position pos, Position last_pos){
 		Position goto_pos;
 		goto_pos.x = x;
 		goto_pos.y = y;
-		goto_point(goto_pos, 8);
+		goto_point(goto_pos, GOTO_WAIT_TIME);
 			
 		// Rasterize the line
 		for (int i = 0; y < ye; i++) {
@@ -100,7 +101,7 @@ void draw_line(Position pos, Position last_pos){
 		    // currently rasterized position
 		goto_pos.x = x;
 		goto_pos.y = y;
-		goto_point(goto_pos,8);
+		goto_point(goto_pos, GOTO_WAIT_TIME);
 		}
 	}
 
@@ -110,7 +111,6 @@ void draw_line(Position pos, Position last_pos){
 void goto_point(Position pos, unsigned short time) {
 	move_motor(pos.x,CSX);
 	move_motor(pos.y,CSY);
-	// TODO: Should fix constants to their own file.
 	delayMicroseconds(2*time);
 }
 
