@@ -1,23 +1,26 @@
 #include "Command.h"
 #include "Position.h"
-#include "Motors.h"
+#include "Interpolation.h"
 
 void InstructionList::addInstruction(Instruction instruction){
 	instructions[point] = instruction;
 	point++;
 }
 
-void InstructionList::executeNext(){
+void InstructionList::executeNext(ActionQueue &actions){
 	Instruction ins = instructions[point];
 	switch (ins.command){
 		case Command::Move:{
-			goto_point(ins.pos,currentPos.time_between(ins.pos));
+            actions.pushSetInterval(currentPos.time_between(ins.pos));
+            actions.pushSpiPacket(Recipient::X, ins.pos.x);
+            actions.pushSpiPacket(Recipient::Y, ins.pos.y);
+			actions.pushWait();
 			currentPos = ins.pos;
 			point++;
 			break;
 		};
 		case Command::Draw:{
-			draw_line(ins.pos, currentPos);
+			draw_line(actions, ins.pos, currentPos);
 			currentPos = ins.pos;
 			point++;
 			break;

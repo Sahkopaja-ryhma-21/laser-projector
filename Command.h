@@ -1,5 +1,5 @@
-#pragma once
 #include "Position.h"
+#include "ActionQueue.h"
 
 enum Command: unsigned char{
 	Move,Draw, LoopStart, LoopEnd, End
@@ -15,7 +15,7 @@ struct InstructionList{
 	public:
 		Instruction instructions[501];
 		void addInstruction(Instruction Instruction);
-		void executeNext();
+		void executeNext(ActionQueue &actions);
 		void finalize();
 	private:
 		int point = 0;

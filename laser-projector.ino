@@ -1,29 +1,35 @@
 #include "Position.h"
 #include "Command.h"
-#include "Motors.h"
+#include "Interpolation.h"
+#include "ActionQueue.h"
 #include <SPI.h>
 
+ActionQueue actions;
 const InstructionList commands;
 void(* resetFunc) (void) = 0;
 
+ISR(TIMER1_OVF_vect)
+{
+    actions.executeCommands();
+}
+
 void setup() {
+    sei(); //enable interrupts
+    pinMode(STATUS_LED, OUTPUT);
+    actions.begin();
+    uint8_t resetSequence[] = {30, 1, 5};
+	actions.pushSpiPacket(Recipient::X, resetSequence, sizeof(resetSequence));
+    actions.pushSpiPacket(Recipient::Y, resetSequence, sizeof(resetSequence));
 	Serial.begin(9600);
-	SPI.begin();
-	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
-	pinMode(CSY, OUTPUT);
-	pinMode(CSX, OUTPUT);
-	pinMode(LASER_PIN, OUTPUT);
-	pinMode(STATUS_LED, OUTPUT);
-	digitalWrite(CSX, HIGH);
-	digitalWrite(CSY, HIGH);
 	commands = read_data();
-	enable_motor(CSX);
-	enable_motor(CSY);
+
 	delay(2000);
 }
 
 void loop() {
-	commands.executeNext();
+    //avoid overflowing the action buffer
+    while(actions.getLength() > actions.getCapacity() / 2);
+	commands.executeNext(actions);
 }
 
 InstructionList read_data() {
