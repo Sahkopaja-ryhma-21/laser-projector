@@ -110,6 +110,13 @@ void enable_motor(unsigned char pin){
 	digitalWrite(pin, HIGH);
 }
 
+void flip_motor(unsigned char pin){
+  digitalWrite(pin,LOW);
+  SPI.transfer(11);
+  SPI.transfer(1);
+  digitalWrite(pin,HIGH);
+}
+
 void disable_motor(unsigned char pin){
 	digitalWrite(pin, LOW);
 	SPI.transfer(31);
