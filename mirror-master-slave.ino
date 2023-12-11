@@ -2,6 +2,7 @@
 #include "Command.h"
 #include "Motors.h"
 #include <SPI.h>
+#include "Serial.h"
 
 const InstructionList commands;
 void(* resetFunc) (void) = 0;
@@ -19,7 +20,11 @@ void setup() {
 	commands = read_data();
 	enable_motor(CSX);
 	enable_motor(CSY);
-	delay(2000);
+	long start_time = millis();
+
+	while(millis() - start_time < 1000){
+		useSerial();
+	}
 }
 
 void loop() {
