@@ -48,8 +48,8 @@ void draw_line(Position pos, Position last_pos){
 		goto_point(goto_pos, GOTO_WAIT_TIME);
 
 		// Rasterize the line
-		for (int i = 0; x < xe; i++) {
-			x++;            // Deal with octants...
+		for (x; x < xe; x++) {
+			// Deal with octants...
 			if (px < 0) {
 				px += 2 * dy1;
 			} else {
@@ -60,7 +60,7 @@ void draw_line(Position pos, Position last_pos){
 				}
 				px += 2 * (dy1 - dx1);
 			}
-				// Draw pixel from line span at
+			// Draw pixel from line span at
 		    // currently rasterized position
 			goto_pos.x = x;
 			goto_pos.y = y;
@@ -86,18 +86,19 @@ void draw_line(Position pos, Position last_pos){
 		goto_point(goto_pos, GOTO_WAIT_TIME);
 			
 		// Rasterize the line
-		for (int i = 0; y < ye; i++) {
-			y = y + 1;            // Deal with octants...
+		for (y; y < ye; y++) {
+			// Deal with octants...
 			if (py <= 0) {
 				py += 2 * dx1;
 			} else {
 				if ((dx < 0 && dy<0) || (dx > 0 && dy > 0)) {
-				x++;
+					x++;
 				} else {
-				x--;
+					x--;
 				}
 			py += 2 * (dx1 - dy1);
-		    }            // Draw pixel from line span at
+		    }            
+			// Draw pixel from line span at
 		    // currently rasterized position
 		goto_pos.x = x;
 		goto_pos.y = y;
