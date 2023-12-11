@@ -11,6 +11,7 @@ void InstructionList::executeNext(ActionQueue &actions){
 	Instruction ins = instructions[point];
 	switch (ins.command){
 		case Command::Move:{
+            while(actions.getLength() > actions.getCapacity() / 2);
             actions.pushSetInterval(currentPos.time_between(ins.pos));
             actions.pushSpiPacket(Recipient::X, ins.pos.x);
             actions.pushSpiPacket(Recipient::Y, ins.pos.y);

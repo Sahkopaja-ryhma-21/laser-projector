@@ -5,6 +5,7 @@
 
 /// Draws a line from current position to position p1
 void draw_line(ActionQueue &actions, Position pos, Position last_pos){
+    while(actions.getLength() > actions.getCapacity() / 2);
     actions.pushSetInterval(GOTO_WAIT_TIME);
 	actions.pushLaserState(true);
 
@@ -35,6 +36,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 		//goto_pos.x = x;
 		//goto_pos.y = y;
 		//goto_point(goto_pos, GOTO_WAIT_TIME);
+        while(actions.getLength() > actions.getCapacity() / 2);
         actions.pushSpiPacket(Recipient::X, x);
         actions.pushSpiPacket(Recipient::Y, y);
         actions.pushWait();
@@ -57,6 +59,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 			//goto_pos.x = x;
 			//goto_pos.y = y;
 			//goto_point(goto_pos, GOTO_WAIT_TIME);
+            while(actions.getLength() > actions.getCapacity() / 2);
             actions.pushSpiPacket(Recipient::X, x);
             actions.pushSpiPacket(Recipient::Y, y);
             actions.pushWait();
@@ -72,6 +75,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 		//goto_pos.x = x;
 		//goto_pos.y = y;
 		//goto_point(goto_pos, GOTO_WAIT_TIME);
+        while(actions.getLength() > actions.getCapacity() / 2);
         actions.pushSpiPacket(Recipient::X, x);
         actions.pushSpiPacket(Recipient::Y, y);
         actions.pushWait();
@@ -94,6 +98,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 		//goto_pos.x = x;
 		//goto_pos.y = y;
 		//goto_point(goto_pos, GOTO_WAIT_TIME);
+        while(actions.getLength() > actions.getCapacity() / 2);
         actions.pushSpiPacket(Recipient::X, x);
         actions.pushSpiPacket(Recipient::Y, y);
         actions.pushWait();

@@ -34,6 +34,7 @@ struct ActionQueue
         SPI.begin();
         SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
         pinMode(CSY, OUTPUT);
+        pinMode(LASER_PIN, OUTPUT);
         pinMode(CSX, OUTPUT);
         
         digitalWrite(CSX, HIGH);
@@ -124,9 +125,9 @@ struct ActionQueue
     //..timer is reconfigured in time before the next interrupt is due. 
     void pushSetInterval(uint16_t delay_us)
     {
-        action[newestIndex] = Action::SET_DELAY;
+        /*action[newestIndex] = Action::SET_DELAY;
         data[newestIndex] = delay_us / 10;
-        addNewest();
+        addNewest();*/
     }
 
     void executeCommands()

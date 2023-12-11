@@ -13,7 +13,7 @@ struct Instruction{
 
 struct InstructionList{
 	public:
-		Instruction instructions[501];
+		Instruction instructions[30];
 		void addInstruction(Instruction Instruction);
 		void executeNext(ActionQueue &actions);
 		void finalize();
