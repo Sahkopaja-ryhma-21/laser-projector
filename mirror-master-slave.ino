@@ -9,6 +9,7 @@ const InstructionList commands;
 void(* resetFunc) (void) = 0;
 
 void setup() {
+
 	Serial.begin(9600);
 	SPI.begin();
 	SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
@@ -18,6 +19,8 @@ void setup() {
 	pinMode(STATUS_LED, OUTPUT);
 	digitalWrite(CSX, HIGH);
 	digitalWrite(CSY, HIGH);
+	disable_motor(CSX);
+	disable_motor(CSY);
 	commands = read_data();
 	enable_motor(CSX);
 	enable_motor(CSY);
