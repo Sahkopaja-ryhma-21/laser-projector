@@ -14,7 +14,7 @@ struct Instruction{
 
 struct InstructionList{
 	public:
-		Instruction instructions[501];
+		Instruction instructions[200];
 		void addInstruction(Instruction Instruction);
 		void executeNext();
 		void finalize();

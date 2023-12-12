@@ -8,20 +8,19 @@ String input = "";
 void useSerial(){
 	if (Serial.available() > 0){
 		char c = Serial.read();
-		switch (c){
-			case '\n': 
-				execute(input);
-				input = "";
-				break;
-			default:
-				input += c;
-				break;
+		if (c==';') {
+			execute(input);
+			input = "";
+		} else {
+			input.concat(c);
 		}
 	}
 }
 
 // Takes a string of format: "<PARAMETER> <VALUE>"
 void execute(String s){
+	Serial.print("Executing: ");
+	Serial.println(s);
 	s.trim();
 	// This is the command that will be executed
 	String parameter;
@@ -30,6 +29,7 @@ void execute(String s){
 	for (int i = 0; i < s.length(); i++){
 		if(s[i] == ' '){
 			String possible_value = s.substring(i);
+			possible_value.trim();
 			// Check that it is actually convertable
 			for (int j = 0; j < possible_value.length();j++){
 				if (!isDigit(possible_value[j])){
