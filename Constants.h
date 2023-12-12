@@ -1,4 +1,4 @@
 #pragma once
 
-int GOTO_WAIT_TIME = 25;
-int MOVING_WAIT_MULTIPLIER = 1;
+extern int GOTO_WAIT_TIME;
+extern int MOVING_WAIT_MULTIPLIER;

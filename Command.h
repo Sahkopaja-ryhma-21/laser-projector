@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Position.h"
 
 enum Command: unsigned char{

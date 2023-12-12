@@ -3,6 +3,7 @@
 #include "Motors.h"
 #include <SPI.h>
 #include "Serial.h"
+#include "Constants.h"
 
 const InstructionList commands;
 void(* resetFunc) (void) = 0;
