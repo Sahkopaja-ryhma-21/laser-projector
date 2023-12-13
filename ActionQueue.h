@@ -90,7 +90,7 @@ public:
 
     inline void pushMotorReverse(Recipient axis, bool flipped = true)
     {
-        uint8_t spiPacket[] = {Parameter::PARAM_INVERTED, flipped ? 1 : 0};
+        uint8_t spiPacket[] = {Parameter::PARAM_INVERTED, (uint8_t)(flipped ? 1 : 0)};
         pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
     }
 
@@ -115,7 +115,7 @@ public:
 
     //Push a wait action on the queue. When executeCommands() encounters this action, it stops
     //..executing queued commands, and only resumes when called again (by the timed interrupt)
-    void pushUpdateEnd();
+    void pushWaitForNextUpdate();
 
     //Configure the interval between timed interrupts. The duration is in units of microseconds, and
     //..has a maximum delay of 2550 (2,55 milliseconds). The resolution is 10 us (to fit in a byte).

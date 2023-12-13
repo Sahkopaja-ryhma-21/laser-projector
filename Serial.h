@@ -2,5 +2,7 @@
 
 #include "Arduino.h"
 
-void useSerial();
-void execute(String s);
+class ActionQueue; //forward declaration to avoid having to #include in header
+
+void useSerial(ActionQueue &actions);
+void execute(ActionQueue &actions, String s);

@@ -2,14 +2,15 @@
 #include "Arduino.h"
 #include "Constants.h"
 #include "Motors.h"
+#include "ActionQueue.h"
 
 String input = "";
 
-void useSerial(){
+void useSerial(ActionQueue &actions){
 	if (Serial.available() > 0){
 		char c = Serial.read();
 		if (c==';') {
-			execute(input);
+			execute(actions, input);
 			input = "";
 		} else {
 			input.concat(c);
@@ -18,20 +19,20 @@ void useSerial(){
 }
 
 // Takes a string of format: "<PARAMETER> <VALUE>"
-void execute(String s){
+void execute(ActionQueue &actions, String s){
 	Serial.print("Executing: ");
 	Serial.println(s);
 	s.trim();
 	// This is the command that will be executed
 	String parameter;
 	// This is the parameter for the command
-	int value;
-	for (int i = 0; i < s.length(); i++){
+	int value = 0;
+	for (unsigned i = 0; i < s.length(); i++){
 		if(s[i] == ' '){
 			String possible_value = s.substring(i);
 			possible_value.trim();
 			// Check that it is actually convertable
-			for (int j = 0; j < possible_value.length();j++){
+			for (unsigned j = 0; j < possible_value.length();j++){
 				if (!isDigit(possible_value[j])){
 					Serial.print(possible_value);
 					Serial.print(" ");
@@ -53,11 +54,17 @@ void execute(String s){
 		return;
 	}
 	if (parameter == "mxe"){
-		if (value){enable_motor(CSX);} else {disable_motor(CSX);}
+		if (value)
+            actions.pushMotorEnable(Recipient::X, ConfigSlot::CONFIG_SLOT_1);
+        else 
+            actions.pushMotorDisable(Recipient::X);
 		return;
 	}
 	if (parameter == "mye"){
-		if (value){enable_motor(CSY);} else {disable_motor(CSY);}
+		if (value)
+            actions.pushMotorEnable(Recipient::Y, ConfigSlot::CONFIG_SLOT_1);
+        else 
+            actions.pushMotorDisable(Recipient::Y);
 		return;
 	}
 	Serial.print(parameter);

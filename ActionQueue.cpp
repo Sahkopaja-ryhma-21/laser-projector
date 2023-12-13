@@ -51,9 +51,9 @@ void ActionQueue::pushLaserState(bool laserOn)
     addNewest();
 }
 
-//Push a wait action on the queue. When executeCommands() encounters this action, it stops
+//Push a wait action on the queue. When update() encounters this action, it stops
 //..executing queued commands, and only resumes when called again (by the timed interrupt)
-void ActionQueue::pushUpdateEnd()
+void ActionQueue::pushWaitForNextUpdate()
 {
     action[newestIndex] = Action::WAIT_DELAY;
     addNewest();
