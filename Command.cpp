@@ -2,7 +2,40 @@
 #include "Position.h"
 #include "ActionQueue.h"
 
-void InstructionList::addInstruction(Instruction instruction){
+void InstructionList::read_data() {
+	short i = 0;
+	while (true){
+		while (Serial.available() < 3);
+
+		unsigned char comm = Serial.read();
+		unsigned char posx = Serial.read();
+		unsigned char posy = Serial.read();
+ 
+		// full zeroes tell that the input is over and time to get to work.
+
+		Instruction instruction;
+		instruction.command = from_char(comm);
+		instruction.pos = create_position(posx, posy);
+		this->addInstruction(instruction);
+		if ((comm | posy | posx) == 0){
+
+			//digitalWrite(STATUS_LED, HIGH); //this interfered with debugging. TODO: re-enable
+			this->finalize();
+            return;
+		}
+		i += 3;
+        
+        if (i >= 1026)
+        {
+            Serial.println("calling the reset vector for some reason");
+            delay(100);
+            void(* resetFunc) (void) = 0;
+            resetFunc();
+        }
+	}
+}
+
+void InstructionList::addInstruction(const Instruction &instruction){
 	instructions[point] = instruction;
 	point++;
 }
@@ -11,13 +44,13 @@ void InstructionList::executeNext(){
 	Instruction ins = instructions[point];
 	switch (ins.command){
 		case Command::Move:{
-			goto_point(*actions, ins.pos,currentPos.time_between(ins.pos));
+			goto_point(actions, ins.pos,currentPos.time_between(ins.pos));
 			currentPos = ins.pos;
 			point++;
 			break;
 		};
 		case Command::Draw:{
-			draw_line(*actions, ins.pos, currentPos);
+			draw_line(actions, ins.pos, currentPos);
 			currentPos = ins.pos;
 			point++;
 			break;
@@ -85,7 +118,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 		goto_point(actions, goto_pos, GOTO_WAIT_TIME);
 
 		// Rasterize the line
-		for (x; x < pos.x || x > pos.x; x+=i) {
+		for (; x != pos.x; x+=i) {
 			// Deal with octants...
 			if (px < 0) {
 				px += 2 * dy1;
@@ -116,7 +149,7 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 		goto_point(actions, goto_pos, GOTO_WAIT_TIME);
 			
 		// Rasterize the line
-		for (y; y < pos.y || y > pos.y; y+=i) {
+		for (; y != pos.y; y+=i) {
 			// Deal with octants...
 			if (py <= 0) {
 				py += 2 * dx1;
@@ -143,5 +176,5 @@ void goto_point(ActionQueue &actions, Position pos, unsigned short time) {
     actions.pushMotorPos(Recipient::X, pos.x);
     actions.pushMotorPos(Recipient::Y, pos.y);
     actions.pushSetInterval(2*time);
-	actions.pushWaitForNextUpdate();
+	actions.pushWaitForNextpopAndExecute();
 }

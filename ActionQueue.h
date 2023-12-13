@@ -6,6 +6,7 @@
 #include <avr/io.h>
 #include "Constants.h"
 #include "MotorSpiCommands.h"
+#include <util/atomic.h>
 
 enum class Recipient : uint8_t {X, Y};
 
@@ -22,21 +23,24 @@ private:
             WAIT_DELAY                      //Stop executing actions and wait for the next timer interrupt
         };
 
-    static constexpr uint8_t SIZE = 64;
+    static constexpr uint8_t SIZE = 32;
     static constexpr uint8_t INDEX_MASK = SIZE - 1;
 
-    volatile Action  action[SIZE];          //The action to be taken
-    volatile uint8_t data[SIZE];            //Data related to the action
     volatile uint8_t newestIndex = 0;       //Index to the newest byte in the buffer
     volatile uint8_t oldestIndex = 0;       //Index of the oldest byte in the queue (next one to be sent)
+    volatile Action  action[SIZE];          //The action to be taken
+    volatile uint8_t data[SIZE];            //Data related to the action
     volatile uint8_t activeChipSelect = 0;  //Pin number of currently asserted chip select output
 
-    inline void addNewest()
+    inline void push()
     {
+        PORTD |= (1u << PORTD7); //STATUS_LED on to indicate a full action buffer
+        while(isFull());
         newestIndex = (newestIndex + 1) & INDEX_MASK;
+        PORTD &= ~(1u << PORTD7); //STATUS_LED off
     }
 
-    inline void removeOldest()
+    inline void pop()
     {
         oldestIndex = (oldestIndex + 1) & INDEX_MASK;
     }
@@ -54,7 +58,7 @@ public:
 
     inline uint8_t getFreeCapacity()
     {
-        return (SIZE - 1) - getLength();
+        return getCapacity() - getLength();
     }
 
     inline bool isEmpty()
@@ -64,7 +68,7 @@ public:
 
     inline bool isFull()
     {
-        return (SIZE - 1) == getLength();
+        return getCapacity() == getLength();
     }
 
     void begin();
@@ -115,7 +119,7 @@ public:
 
     //Push a wait action on the queue. When executeCommands() encounters this action, it stops
     //..executing queued commands, and only resumes when called again (by the timed interrupt)
-    void pushWaitForNextUpdate();
+    void pushWaitForNextpopAndExecute();
 
     //Configure the interval between timed interrupts. The duration is in units of microseconds, and
     //..has a maximum delay of 2550 (2,55 milliseconds). The resolution is 10 us (to fit in a byte).
@@ -123,7 +127,7 @@ public:
     //..timer is reconfigured in time before the next interrupt is due. 
     void pushSetInterval(uint16_t delay_us);
 
-    void update();
+    void popAndExecute();
 };
 
 #endif//ACTIONQUEUE_H

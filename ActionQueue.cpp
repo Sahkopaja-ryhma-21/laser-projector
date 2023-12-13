@@ -20,7 +20,7 @@ void ActionQueue::begin()
     //In this timer mode, the timer value increments once every clock cycle (at 16 MHz) until the value
     //..reaches ICR1. Then the timer generates an overflow interrupt and restarts from 0.
     TCNT1  = 0; //clear the timer count
-    ICR1   = 16000000UL / 10000; //10 kHz frequency
+    ICR1   = F_CPU / 10000; //10 kHz frequency
     TCCR1A = (1<<WGM11)  | (0<<WGM10); //fast pwm mode, TOP = ICR1
     TCCR1B = (1<<WGM13)  | (1<<WGM12); 
     TIMSK1 = (1<<TOIE1); //timer 1 overflow interrupt enabled
@@ -37,26 +37,26 @@ void ActionQueue::pushSpiPacket(Recipient recipient, uint8_t *packet, uint8_t pa
     for(uint8_t i = 0; i < packetSize; ++i)
     {
         data[newestIndex] = packet[i];
-        addNewest();
+        push();
         action[newestIndex] = Action::PACKET_DATA;
     }
     action[newestIndex] = Action::END_PACKET;
-    addNewest();
+    push();
 }
 
 void ActionQueue::pushLaserState(bool laserOn)
 {
     action[newestIndex] = Action::SET_LASER;
     data[newestIndex] = laserOn;
-    addNewest();
+    push();
 }
 
-//Push a wait action on the queue. When update() encounters this action, it stops
+//Push a wait action on the queue. When popAndExecute() encounters this action, it stops
 //..executing queued commands, and only resumes when called again (by the timed interrupt)
-void ActionQueue::pushWaitForNextUpdate()
+void ActionQueue::pushWaitForNextpopAndExecute()
 {
     action[newestIndex] = Action::WAIT_DELAY;
-    addNewest();
+    push();
 }
 
 //Configure the interval between timed interrupts. The duration is in units of microseconds, and
@@ -67,24 +67,24 @@ void ActionQueue::pushSetInterval(uint16_t delay_us)
 {
     /*action[newestIndex] = Action::SET_DELAY;
     data[newestIndex] = delay_us / 10;
-    addNewest();*/
+    push();*/
 }
 
-void ActionQueue::update()
+void ActionQueue::popAndExecute()
 {
-    while(!this->isEmpty())
+    while(!isEmpty())
     {
         switch(action[oldestIndex])
         {
         case Action::X_START_PACKET:
-            activeChipSelect = CSX;
-            digitalWrite(activeChipSelect, LOW);
+            activeChipSelect = (1u << PORTB2);
+            PORTB &= ~activeChipSelect; //clear chip select for PB2/pin 10
             SPI.transfer(data[oldestIndex]);
             break;
 
         case Action::Y_START_PACKET:
-            activeChipSelect = CSY;
-            digitalWrite(activeChipSelect, LOW);
+            activeChipSelect = (1u << PORTB1);
+            PORTB &= ~activeChipSelect; //clear chip select for PB1/pin 9
             SPI.transfer(data[oldestIndex]);
             break;
 
@@ -93,11 +93,14 @@ void ActionQueue::update()
             break;
 
         case Action::END_PACKET:
-            digitalWrite(activeChipSelect, HIGH);
+            PORTB |= activeChipSelect; //set the chip select pin last cleared
             break;
 
         case Action::SET_LASER:
-            digitalWrite(LASER_PIN, data[oldestIndex]);
+            if(data[oldestIndex] == 1)
+                PORTD |= (1u << PORTD4); //LASER_PIN on
+            else
+                PORTD &= ~(1u << PORTD4); //LASER_PIN off
             break;
 
         case Action::SET_DELAY:
@@ -106,9 +109,9 @@ void ActionQueue::update()
 
         default:
         case Action::WAIT_DELAY:
-            removeOldest();
+            pop();
             return;
         }
-        removeOldest();
+        pop();
     }
 }

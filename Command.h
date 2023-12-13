@@ -3,7 +3,7 @@
 #include "Position.h"
 
 enum Command: unsigned char{
-	Move,Draw, LoopStart, LoopEnd, End
+	Move, Draw, LoopStart, LoopEnd, End
 };
 
 struct Instruction{
@@ -15,16 +15,24 @@ struct Instruction{
 class ActionQueue; //forward declaration to avoid #include
 
 struct InstructionList{
-	public:
-		Instruction instructions[200];
-		void addInstruction(Instruction Instruction);
+	private:
+        ActionQueue &actions;
+		int point;
+		int end;
+		Position currentPos;
+    public:
+        //constructor (for generating a new ActionQueue from scrach)
+        InstructionList(ActionQueue &actions_) : actions(actions_) 
+        {
+            point = 0;
+            currentPos = create_position(0,0);
+        }
+
+		Instruction instructions[100];
+        void read_data();
+		void addInstruction(const Instruction &Instruction);
 		void executeNext();
 		void finalize();
-	private:
-		int point = 0;
-		int end;
-        ActionQueue *actions;
-		Position currentPos = create_position(0,0);
 };
 
 void draw_line(ActionQueue &actions, Position, Position);
