@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include "Constants.h"
+#include "MotorSpiCommands.h"
 
 enum class Recipient : uint8_t {X, Y};
 
@@ -69,6 +70,46 @@ public:
     void begin();
 
     void pushSpiPacket(Recipient recipient, uint8_t *packet, uint8_t packetSize = 1);
+
+    //Load a configuration and set the initialization state. By default, loads the default conf. 
+    //..and starts the servo.
+    void pushMotorEnable(
+            Recipient axis, ConfigSlot slot = ConfigSlot::CONFIG_DEFAULT
+        )
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_LOAD_CONFIG, slot, InitState::INIT_ANGLE_CTRL};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    //Shuts down a servo
+    void pushMotorDisable(Recipient axis)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_INIT_STATE, InitState::INIT_OFF};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorReverse(Recipient axis, bool flipped = true)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_INVERTED, flipped ? 1 : 0};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorScale(Recipient axis, uint8_t factor = 128) //255 uses the maximum possible output range
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_ANGLE_SCALE, factor};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorCenterPos(Recipient axis, uint8_t offset = 128) //0 moves the center position to one extreme, 255 to the other
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_ANGLE_CENTER, offset};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorPos(Recipient axis, uint8_t position)
+    {
+        pushSpiPacket(axis, &position, 1);
+    }
 
     void pushLaserState(bool laserOn);
 
