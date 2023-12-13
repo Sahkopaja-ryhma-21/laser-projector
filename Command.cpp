@@ -33,7 +33,17 @@ void InstructionList::executeNext(){
 }
 
 void InstructionList::finalize(){
-	end = point;
+	point = 0;
+}
+
+void InstructionList::clear(){
+	for (int i = 0; i<LIST_SIZE; i++){
+		Instruction end_instruction;
+		Position origin = create_position(0,0);
+		end_instruction.command = Command::End;
+		end_instruction.pos = origin;
+		instructions[i] = end_instruction;
+	}
 	point = 0;
 }
 

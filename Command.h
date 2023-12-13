@@ -2,6 +2,8 @@
 
 #include "Position.h"
 
+const int LIST_SIZE = 300;
+
 enum Command: unsigned char{
 	Move,Draw, LoopStart, LoopEnd, End
 };
@@ -14,13 +16,13 @@ struct Instruction{
 
 struct InstructionList{
 	public:
-		Instruction instructions[200];
+		Instruction instructions[LIST_SIZE];
 		void addInstruction(Instruction Instruction);
 		void executeNext();
 		void finalize();
+		void clear();
 	private:
 		int point = 0;
-		int end;
 		Position currentPos = create_position(0,0);
 };
 
