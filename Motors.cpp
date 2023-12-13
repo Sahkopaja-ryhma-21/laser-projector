@@ -111,8 +111,6 @@ void enable_motor(unsigned char pin){
 	digitalWrite(pin, HIGH);
 }
 
-<<<<<<< HEAD
-=======
 void flip_motor(unsigned char pin){
   digitalWrite(pin,LOW);
   SPI.transfer(11);
@@ -120,7 +118,6 @@ void flip_motor(unsigned char pin){
   digitalWrite(pin,HIGH);
 }
 
->>>>>>> parent of b031c96 (implement action queue for more consistent output timing)
 void disable_motor(unsigned char pin){
 	digitalWrite(pin, LOW);
 	SPI.transfer(31);

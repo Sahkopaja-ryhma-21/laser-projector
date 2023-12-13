@@ -4,13 +4,14 @@
 #include <SPI.h>
 #include <stdint.h>
 #include <avr/io.h>
-#include "Interpolation.h"
+#include "Constants.h"
 
 enum class Recipient : uint8_t {X, Y};
 
 //First in, first out action buffer.
-struct ActionQueue
+class ActionQueue
 {
+private:
     enum class Action : uint8_t {
             X_START_PACKET, Y_START_PACKET, //Clear chip select and send one byte of data
             PACKET_DATA,                    //Do not touch chip select, just send data.
@@ -29,53 +30,6 @@ struct ActionQueue
     volatile uint8_t oldestIndex = 0;       //Index of the oldest byte in the queue (next one to be sent)
     volatile uint8_t activeChipSelect = 0;  //Pin number of currently asserted chip select output
 
-    void begin()
-    {
-        SPI.begin();
-        SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
-        pinMode(CSY, OUTPUT);
-        pinMode(LASER_PIN, OUTPUT);
-        pinMode(CSX, OUTPUT);
-        
-        digitalWrite(CSX, HIGH);
-        digitalWrite(CSY, HIGH);
-
-        //Timer1 configuration. Timer1 is used to trigger periodic SPI and laser updates.
-        //In this timer mode, the timer value increments once every clock cycle (at 16 MHz) until the value
-        //..reaches ICR1. Then the timer generates an overflow interrupt and restarts from 0.
-        TCNT1  = 0; //clear the timer count
-        ICR1   = 16000000UL / 10000; //10 kHz frequency
-        TCCR1A = (1<<WGM11)  | (0<<WGM10); //fast pwm mode, TOP = ICR1
-        TCCR1B = (1<<WGM13)  | (1<<WGM12); 
-        TIMSK1 = (1<<TOIE1); //timer 1 overflow interrupt enabled
-        TCCR1B |= (1<<CS10); //start the timer with a prescaler of 1/1
-    }
-
-    uint8_t getLength()
-    {
-        return (newestIndex - oldestIndex) & INDEX_MASK;
-    }
-
-    uint8_t getFreeCapacity()
-    {
-        return (SIZE - 1) - getLength();
-    }
-
-    bool isEmpty()
-    {
-        return newestIndex == oldestIndex;
-    }
-
-    bool isFull()
-    {
-        return (SIZE - 1) == getLength();
-    }
-
-    constexpr uint8_t getCapacity()
-    {
-        return SIZE;
-    }
-
     inline void addNewest()
     {
         newestIndex = (newestIndex + 1) & INDEX_MASK;
@@ -86,92 +40,49 @@ struct ActionQueue
         oldestIndex = (oldestIndex + 1) & INDEX_MASK;
     }
 
-    //not bounds checked!
-    void pushSpiPacket(Recipient recipient, uint8_t *packet, uint8_t packetSize = 1)
+public:
+    inline uint8_t getLength()
     {
-        if(recipient == Recipient::X)
-            action[newestIndex] = Action::X_START_PACKET;
-        else
-            action[newestIndex] = Action::Y_START_PACKET;
-        
-        for(uint8_t i = 0; i < packetSize; ++i)
-        {
-            data[newestIndex] = packet[i];
-            addNewest();
-            action[newestIndex] = Action::PACKET_DATA;
-        }
-        action[newestIndex] = Action::END_PACKET;
-        addNewest();
+        return (newestIndex - oldestIndex) & INDEX_MASK;
     }
 
-    void pushLaserState(bool laserOn)
+    constexpr uint8_t getCapacity()
     {
-        action[newestIndex] = Action::SET_LASER;
-        data[newestIndex] = laserOn;
-        addNewest();
+        return SIZE - 1;
     }
+
+    inline uint8_t getFreeCapacity()
+    {
+        return (SIZE - 1) - getLength();
+    }
+
+    inline bool isEmpty()
+    {
+        return newestIndex == oldestIndex;
+    }
+
+    inline bool isFull()
+    {
+        return (SIZE - 1) == getLength();
+    }
+
+    void begin();
+
+    void pushSpiPacket(Recipient recipient, uint8_t *packet, uint8_t packetSize = 1);
+
+    void pushLaserState(bool laserOn);
 
     //Push a wait action on the queue. When executeCommands() encounters this action, it stops
     //..executing queued commands, and only resumes when called again (by the timed interrupt)
-    void pushWait()
-    {
-        action[newestIndex] = Action::WAIT_DELAY;
-        addNewest();
-    }
+    void pushUpdateEnd();
 
     //Configure the interval between timed interrupts. The duration is in units of microseconds, and
     //..has a maximum delay of 2550 (2,55 milliseconds). The resolution is 10 us (to fit in a byte).
     //..The preceding action on the queue should be a pushWait() call, to ensure that the hardware
     //..timer is reconfigured in time before the next interrupt is due. 
-    void pushSetInterval(uint16_t delay_us)
-    {
-        /*action[newestIndex] = Action::SET_DELAY;
-        data[newestIndex] = delay_us / 10;
-        addNewest();*/
-    }
+    void pushSetInterval(uint16_t delay_us);
 
-    void executeCommands()
-    {
-        while(!this->isEmpty())
-        {
-            switch(action[oldestIndex])
-            {
-            case Action::X_START_PACKET:
-                activeChipSelect = CSX;
-                digitalWrite(activeChipSelect, LOW);
-                SPI.transfer(data[oldestIndex]);
-                break;
-
-            case Action::Y_START_PACKET:
-                activeChipSelect = CSY;
-                digitalWrite(activeChipSelect, LOW);
-                SPI.transfer(data[oldestIndex]);
-                break;
-
-            case Action::PACKET_DATA:
-                SPI.transfer(data[oldestIndex]);
-                break;
-
-            case Action::END_PACKET:
-                digitalWrite(activeChipSelect, HIGH);
-                break;
-
-            case Action::SET_LASER:
-                digitalWrite(LASER_PIN, data[oldestIndex]);
-                break;
-
-            case Action::SET_DELAY:
-                ICR1 = F_CPU / 100000 * data[oldestIndex];
-                break;
-
-            default:
-            case Action::WAIT_DELAY:
-                removeOldest();
-                return;
-            }
-            removeOldest();
-        }
-    }
+    void update();
 };
 
 #endif//ACTIONQUEUE_H
