@@ -1,8 +1,8 @@
 #include "Serial.h"
 #include "Arduino.h"
 #include "Constants.h"
-#include "Motors.h"
 #include "Command.h"
+#include "ActionQueue.h"
 
 String input = "";
 
@@ -11,18 +11,18 @@ String input = "";
 // This fuction is used to reset the Arduino
 void(* resetFunc) (void) = 0;
 
-void useSerial(InstructionList *listptr){
+void useSerial(InstructionList *listptr, ActionQueue &actions){
 	if (Serial.available() > 0){
 		char c = Serial.read();
 		if (c == DATA_BEGIN_CHAR){
-			read_data(listptr);
-			enable_motor(CSX);
-			enable_motor(CSY);
+			listptr->read_data();
+			actions.pushMotorEnable(Recipient::X, ConfigSlot::CONFIG_SLOT_1);
+			actions.pushMotorEnable(Recipient::Y, ConfigSlot::CONFIG_SLOT_1);
 			delay(1000);
 			return;
 		}
 		if (c==';') {
-			execute(input);
+			execute(actions,input);
 			input = "";
 		} else {
 			input.concat(c);
@@ -30,49 +30,22 @@ void useSerial(InstructionList *listptr){
 	}
 }
 
-// Reads a new InstructionList from serial
-void read_data(InstructionList *listptr) {
-	listptr->clear();
-	short i = 0;
-	while (true){
-		while (Serial.available()<3){
-		}
-
-		unsigned char comm = Serial.read();
-		unsigned char posx = Serial.read();
-		unsigned char posy = Serial.read();
-
-		Instruction instruction;
-		instruction.command = from_char(comm);
-		instruction.pos = create_position(posx, posy);
-		listptr->addInstruction(instruction);
-		// full zeroes tell that the input is over and time to get to work.
-		if ((comm | posy | posx)  == 0){
-			digitalWrite(STATUS_LED, HIGH);
-			listptr->finalize();
-			return;
-		}
-		i+=3;
-		// This is a guard for overflowing the buffer. In that case the Arduino is reset to hopefully tell the user that the problem is with their instructions
-		if (i>=3*LIST_SIZE) resetFunc();
-	}
-}
 
 // Takes a string of format: "<PARAMETER> <VALUE>"
-void execute(String s){
+void execute(ActionQueue &actions, String s){
 	Serial.print("Executing: ");
 	Serial.println(s);
 	s.trim();
 	// This is the command that will be executed
 	String parameter;
 	// This is the parameter for the command
-	int value;
-	for (int i = 0; i < s.length(); i++){
+	int value = 0;
+	for (unsigned i = 0; i < s.length(); i++){
 		if(s[i] == ' '){
 			String possible_value = s.substring(i);
 			possible_value.trim();
 			// Check that it is actually convertable
-			for (int j = 0; j < possible_value.length();j++){
+			for (unsigned j = 0; j < possible_value.length();j++){
 				if (!isDigit(possible_value[j])){
 					Serial.print(possible_value);
 					Serial.print(" ");
@@ -94,11 +67,18 @@ void execute(String s){
 		return;
 	}
 	if (parameter == "mxe"){
-		if (value){enable_motor(CSX);} else {disable_motor(CSX);}
+
+		if (value)
+        	actions.pushMotorEnable(Recipient::X, ConfigSlot::CONFIG_SLOT_1);
+        	else
+        	actions.pushMotorDisable(Recipient::X);
 		return;
 	}
 	if (parameter == "mye"){
-		if (value){enable_motor(CSY);} else {disable_motor(CSY);}
+		if (value)
+        	actions.pushMotorEnable(Recipient::Y, ConfigSlot::CONFIG_SLOT_1);
+        	else
+        	actions.pushMotorDisable(Recipient::Y);
 		return;
 	}
 	Serial.print(parameter);

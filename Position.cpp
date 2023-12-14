@@ -12,8 +12,8 @@ unsigned short Position::distance(Position &another){
 }
 
 unsigned short Position::time_between(Position &another){
-	unsigned short maxDist = max(abs(this->x - another.x), abs(this->y - another.y));
-	return MOVING_WAIT_MULTIPLIER*GOTO_WAIT_TIME*maxDist;
+	uint32_t maxDist = max(abs(this->x - another.x), abs(this->y - another.y));
+	return maxDist * MOVING_WAIT_MULTIPLIER * GOTO_WAIT_TIME / 64;
 }
 
 unsigned short Position::bsqrt(unsigned long n){

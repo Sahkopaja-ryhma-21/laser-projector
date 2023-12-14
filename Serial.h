@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Arduino.h"
 #include "Command.h"
+#include "Arduino.h"
 
-void read_data(InstructionList* listptr);
-void useSerial(InstructionList* listptr);
-void execute(String s);
+class ActionQueue; //forward declaration to avoid having to #include in header
+
+void useSerial(InstructionList *listprt, ActionQueue &actions);
+void execute(ActionQueue &actions, String s);
