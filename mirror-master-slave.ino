@@ -37,15 +37,14 @@ void setup() {
 	actions.pushMotorEnable(Recipient::XY, ConfigSlot::CONFIG_DEFAULT);
 	for(int n = 0; n < 500; ++n)
         actions.pushDelay(); //wait 500 ms for the servo to initialize
-	actions.pushMotorReverse(Recipient::Y);
 	actions.pushDelay();
 	actions.pushMotorCenterPos(Recipient::X, 80);
 	actions.pushDelay();
-	actions.pushMotorCurrentGain( Recipient::XY,  7,  16,  2);
+	actions.pushMotorCurrentGain(Recipient::XY,  7,  16,  2);
 	actions.pushDelay();
 	actions.pushMotorVelocityGain(Recipient::XY, 30,  0, 15);
 	actions.pushDelay();
-	actions.pushMotorAngleGain(   Recipient::XY,  8,  0, 20);
+	actions.pushMotorAngleGain(Recipient::XY,  8,  0, 20);
 	actions.pushDelay();
 
 	Serial.println("ending \"setup()\"");
