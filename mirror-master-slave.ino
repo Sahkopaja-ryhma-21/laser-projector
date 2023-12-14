@@ -21,7 +21,7 @@ ISR(TIMER1_OVF_vect)
 }
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	Serial.println("reset");
 	pinMode(STATUS_LED, OUTPUT);
 	pinMode(5, OUTPUT);
@@ -45,6 +45,8 @@ void setup() {
 	actions.pushMotorVelocityGain(Recipient::XY, 30,  0, 15);
 	actions.pushDelay();
 	actions.pushMotorAngleGain(Recipient::XY,  8,  0, 20);
+	actions.pushDelay();
+	actions.pushMotorScale(Recipient::Y, 200);
 	actions.pushDelay();
 
 	Serial.println("ending \"setup()\"");

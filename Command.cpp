@@ -4,6 +4,7 @@
 
 void InstructionList::read_data() {
 	short i = 0;
+	this->clear();
 	while (true){
 		while (Serial.available() < 3);
 

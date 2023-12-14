@@ -2,7 +2,7 @@
 
 #include "Position.h"
 
-const int LIST_SIZE = 300;
+const int LIST_SIZE = 250;
 
 enum Command: unsigned char{
 	Move, Draw, LoopStart, LoopEnd, End
