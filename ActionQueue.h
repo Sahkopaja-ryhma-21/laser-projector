@@ -8,7 +8,7 @@
 #include "MotorSpiCommands.h"
 #include <util/atomic.h>
 
-enum class Recipient : uint8_t {X, Y};
+enum class Recipient : uint8_t {X, Y, XY};
 
 //First in, first out action buffer.
 class ActionQueue
@@ -20,6 +20,8 @@ private:
             END_PACKET,                     //Do not send data, just set chip select
             SET_LASER,                      //Change the state of the laser output
             SET_DELAY,                      //Reschedule the next timer interrupt
+            SET_LONG_DELAY_H,
+            SET_LONG_DELAY_L,
             WAIT_DELAY                      //Stop executing actions and wait for the next timer interrupt
         };
 
@@ -31,6 +33,7 @@ private:
     volatile Action  action[SIZE];          //The action to be taken
     volatile uint8_t data[SIZE];            //Data related to the action
     volatile uint8_t activeChipSelect = 0;  //Pin number of currently asserted chip select output
+    volatile uint8_t delayTempH = 0;         //Temporary storage for the high byte of the next delay duration 
 
     inline void push()
     {
@@ -92,6 +95,24 @@ public:
         pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
     }
 
+    inline void pushMotorCurrentGain(Recipient axis, uint8_t p, uint8_t i, uint8_t d)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_CURRENT_GAIN_P, p, i, d};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorVelocityGain(Recipient axis, uint8_t p, uint8_t i, uint8_t d)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_VELOCITY_GAIN_P, p, i, d};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
+    inline void pushMotorAngleGain(Recipient axis, uint8_t p, uint8_t i, uint8_t d)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_ANGLE_GAIN_P, p, i, d};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
     inline void pushMotorReverse(Recipient axis, bool flipped = true)
     {
         uint8_t spiPacket[] = {Parameter::PARAM_INVERTED, (uint8_t)(flipped ? 1 : 0)};
@@ -119,13 +140,13 @@ public:
 
     //Push a wait action on the queue. When executeCommands() encounters this action, it stops
     //..executing queued commands, and only resumes when called again (by the timed interrupt)
-    void pushWaitForNextpopAndExecute();
+    void pushDelay(uint16_t periods = 1);
 
     //Configure the interval between timed interrupts. The duration is in units of microseconds, and
     //..has a maximum delay of 2550 (2,55 milliseconds). The resolution is 10 us (to fit in a byte).
     //..The preceding action on the queue should be a pushWait() call, to ensure that the hardware
     //..timer is reconfigured in time before the next interrupt is due. 
-    void pushSetInterval(uint16_t delay_us);
+    void pushSetDelayPeriod(uint16_t microseconds);
 
     void popAndExecute();
 };

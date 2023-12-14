@@ -44,7 +44,7 @@ void InstructionList::executeNext(){
 	Instruction ins = instructions[point];
 	switch (ins.command){
 		case Command::Move:{
-			goto_point(actions, ins.pos,currentPos.time_between(ins.pos));
+			goto_point(actions, ins.pos, currentPos.time_between(ins.pos));
 			currentPos = ins.pos;
 			point++;
 			break;
@@ -173,8 +173,8 @@ void draw_line(ActionQueue &actions, Position pos, Position last_pos){
 }
 
 void goto_point(ActionQueue &actions, Position pos, unsigned short time) {
+    actions.pushSetDelayPeriod(time);
     actions.pushMotorPos(Recipient::X, pos.x);
     actions.pushMotorPos(Recipient::Y, pos.y);
-    actions.pushSetInterval(2*time);
-	actions.pushWaitForNextpopAndExecute();
+	actions.pushDelay();
 }

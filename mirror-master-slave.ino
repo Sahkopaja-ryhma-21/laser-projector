@@ -29,14 +29,25 @@ void setup() {
     pinMode(3, OUTPUT);
     pinMode(2, OUTPUT);
     actions.begin();
-    actions.pushMotorDisable(Recipient::X);
-    actions.pushMotorDisable(Recipient::Y);
+    actions.pushMotorDisable(Recipient::XY);
     Serial.println("entering \"commands.read_data()\"");
 	commands.read_data();
     Serial.println("exiting \"commands.read_data()\"");
-    actions.pushMotorEnable(Recipient::X, ConfigSlot::CONFIG_DEFAULT);
-    actions.pushMotorEnable(Recipient::Y, ConfigSlot::CONFIG_DEFAULT);
+    actions.pushSetDelayPeriod(1000); //set the delay to 1 millisecond
+    actions.pushMotorEnable(Recipient::XY, ConfigSlot::CONFIG_DEFAULT);
+    for(int n = 0; n < 500; ++n)
+        actions.pushDelay(); //wait 500 ms for the servo to initialize
     actions.pushMotorReverse(Recipient::Y);
+    actions.pushDelay();
+    actions.pushMotorCenterPos(Recipient::X, 80);
+    actions.pushDelay();
+    actions.pushMotorCurrentGain( Recipient::XY,  7,  16,  2);
+    actions.pushDelay();
+    actions.pushMotorVelocityGain(Recipient::XY, 30,  0, 15);
+    actions.pushDelay();
+    actions.pushMotorAngleGain(   Recipient::XY,  8,  0, 20);
+    actions.pushDelay();
+
 	long start_time = millis();
     Serial.println("ending \"setup()\"");
 	//while(millis() - start_time < 1000){

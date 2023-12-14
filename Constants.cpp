@@ -1,4 +1,4 @@
 #include "Constants.h"
 
-int GOTO_WAIT_TIME = 25;
-int MOVING_WAIT_MULTIPLIER = 1;
+int GOTO_WAIT_TIME = 400;
+int MOVING_WAIT_MULTIPLIER = 16;

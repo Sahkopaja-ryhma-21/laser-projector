@@ -24,24 +24,35 @@ void ActionQueue::begin()
     TCCR1A = (1<<WGM11)  | (0<<WGM10); //fast pwm mode, TOP = ICR1
     TCCR1B = (1<<WGM13)  | (1<<WGM12); 
     TIMSK1 = (1<<TOIE1); //timer 1 overflow interrupt enabled
-    TCCR1B |= (1<<CS10); //start the timer with a prescaler of 1/1
+    TCCR1B |= (0<<CS12) | (1<<CS11) | (1<<CS10); //start the timer with a prescaler of 1/64 (250 kHz update rate)
 }
 
 void ActionQueue::pushSpiPacket(Recipient recipient, uint8_t *packet, uint8_t packetSize = 1)
 {
-    if(recipient == Recipient::X)
-        action[newestIndex] = Action::X_START_PACKET;
-    else
-        action[newestIndex] = Action::Y_START_PACKET;
-    
-    for(uint8_t i = 0; i < packetSize; ++i)
+    if(recipient == Recipient::X || recipient == Recipient::XY)
     {
-        data[newestIndex] = packet[i];
+        action[newestIndex] = Action::X_START_PACKET;
+        for(uint8_t i = 0; i < packetSize; ++i)
+        {
+            data[newestIndex] = packet[i];
+            push();
+            action[newestIndex] = Action::PACKET_DATA;
+        }
+        action[newestIndex] = Action::END_PACKET;
         push();
-        action[newestIndex] = Action::PACKET_DATA;
     }
-    action[newestIndex] = Action::END_PACKET;
-    push();
+    if(recipient == Recipient::Y || recipient == Recipient::XY)
+    {
+        action[newestIndex] = Action::Y_START_PACKET;
+        for(uint8_t i = 0; i < packetSize; ++i)
+        {
+            data[newestIndex] = packet[i];
+            push();
+            action[newestIndex] = Action::PACKET_DATA;
+        }
+        action[newestIndex] = Action::END_PACKET;
+        push();
+    }
 }
 
 void ActionQueue::pushLaserState(bool laserOn)
@@ -53,21 +64,43 @@ void ActionQueue::pushLaserState(bool laserOn)
 
 //Push a wait action on the queue. When popAndExecute() encounters this action, it stops
 //..executing queued commands, and only resumes when called again (by the timed interrupt)
-void ActionQueue::pushWaitForNextpopAndExecute()
+void ActionQueue::pushDelay(uint16_t periods)
 {
-    action[newestIndex] = Action::WAIT_DELAY;
-    push();
+    while(periods > 0)
+    {
+        action[newestIndex] = Action::WAIT_DELAY;
+        push();
+        --periods;
+    }
 }
 
-//Configure the interval between timed interrupts. The duration is in units of microseconds, and
-//..has a maximum delay of 2550 (2,55 milliseconds). The resolution is 10 us (to fit in a byte).
-//..The preceding action on the queue should be a pushWait() call, to ensure that the hardware
+//Configure the interval between timed interrupts. The duration is in units of microseconds. 
+//The preceding action pushed to the queue should be a pushWait() call, to ensure that the hardware
 //..timer is reconfigured in time before the next interrupt is due. 
-void ActionQueue::pushSetInterval(uint16_t delay_us)
+void ActionQueue::pushSetDelayPeriod(uint16_t microseconds)
 {
-    /*action[newestIndex] = Action::SET_DELAY;
-    data[newestIndex] = delay_us / 10;
-    push();*/
+    if(microseconds < 50)
+        microseconds = 50; //clamp overly short delays
+    
+    //the timer increments once every 4 microsecons (250 kHz)
+    uint16_t period = microseconds / 4;
+    if(period < 0x100)
+    {
+        //if the value fits in one byte, only push one byte on the queue.
+        action[newestIndex] = Action::SET_DELAY;
+        data[newestIndex] = period & 0xFF;
+        push();
+    }
+    else
+    {
+        //otherwise push the value as two separate bytes on the queue.
+        action[newestIndex] = Action::SET_LONG_DELAY_H;
+        data[newestIndex] = period >> 8;
+        push();
+        action[newestIndex] = Action::SET_LONG_DELAY_L;
+        data[newestIndex] = period & 0xFF;
+        push();
+    }
 }
 
 void ActionQueue::popAndExecute()
@@ -76,6 +109,11 @@ void ActionQueue::popAndExecute()
     {
         switch(action[oldestIndex])
         {
+        default:
+        case Action::WAIT_DELAY:
+            pop();
+            return;
+            
         case Action::X_START_PACKET:
             activeChipSelect = (1u << PORTB2);
             PORTB &= ~activeChipSelect; //clear chip select for PB2/pin 10
@@ -97,20 +135,23 @@ void ActionQueue::popAndExecute()
             break;
 
         case Action::SET_LASER:
-            if(data[oldestIndex] == 1)
-                PORTD |= (1u << PORTD4); //LASER_PIN on
-            else
+            if(data[oldestIndex] == 0)
                 PORTD &= ~(1u << PORTD4); //LASER_PIN off
+            else
+                PORTD |= (1u << PORTD4); //LASER_PIN on
             break;
 
+        case Action::SET_LONG_DELAY_H:
+            this->delayTempH = data[oldestIndex];
+            break;
+
+        case Action::SET_LONG_DELAY_L:
+            ICR1 = static_cast<uint16_t>(this->delayTempH) << 8 | data[oldestIndex];
+            break;
+        
         case Action::SET_DELAY:
-            ICR1 = F_CPU / 100000 * data[oldestIndex];
+            ICR1 = data[oldestIndex];
             break;
-
-        default:
-        case Action::WAIT_DELAY:
-            pop();
-            return;
         }
         pop();
     }
