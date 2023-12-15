@@ -48,6 +48,8 @@ void setup() {
 	actions.pushDelay();
 	actions.pushMotorScale(Recipient::Y, 200);
 	actions.pushDelay();
+    actions.pushMotorStoreConfig(Recipient::XY, ConfigSlot::CONFIG_SLOT_1);
+    actions.pushDelay();
 
 	Serial.println("ending \"setup()\"");
 }

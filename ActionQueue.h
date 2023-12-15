@@ -95,6 +95,13 @@ public:
         pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
     }
 
+    //Shuts down a servo
+    void pushMotorStoreConfig(Recipient axis, ConfigSlot slot = ConfigSlot::CONFIG_DEFAULT)
+    {
+        uint8_t spiPacket[] = {Parameter::PARAM_STORE_CONFIG, slot};
+        pushSpiPacket(axis, spiPacket, sizeof(spiPacket));
+    }
+
     inline void pushMotorCurrentGain(Recipient axis, uint8_t p, uint8_t i, uint8_t d)
     {
         uint8_t spiPacket[] = {Parameter::PARAM_CURRENT_GAIN_P, p, i, d};
