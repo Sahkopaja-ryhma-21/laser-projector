@@ -46,7 +46,7 @@ void setup() {
 	actions.pushDelay();
 	actions.pushMotorAngleGain(Recipient::XY,  8,  0, 20);
 	actions.pushDelay();
-	actions.pushMotorScale(Recipient::Y, 200);
+	actions.pushMotorScale(Recipient::Y, 150);
 	actions.pushDelay();
     actions.pushMotorStoreConfig(Recipient::XY, ConfigSlot::CONFIG_SLOT_1);
     actions.pushDelay();
